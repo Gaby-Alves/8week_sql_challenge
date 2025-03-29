@@ -299,3 +299,98 @@ group by customer_id;
 | A           | 1020      |
 | B           | 320       |
 
+
+---
+Bônus Questions
+Join All The Things
+Recreate the table with: customer_id, order_date, product_name, price, member (Y/N)
+````sql
+select a.customer_id, a.order_date, b.product_name,b.price,
+case when
+a.order_date >= c.join_date then 'Y'
+else 'N'
+END AS member
+from sales a
+left join menu b
+on a.product_id = b.product_id
+left join members c
+on a.customer_id = c.customer_id
+order by a.customer_id, a.order_date, b.product_name
+
+````
+#### Passo a passo 🦶🦶:
+- Basicametne estamos selecionando os campos e criando um case when para defrinir quem é member ou não naquela determinada data.
+
+####Resposta
+| customer_id | order_date | product_name | price | member |
+|-------------|------------|--------------|-------|--------|
+| A           | 2021-01-01 | curry        | 15    | N      |
+| A           | 2021-01-01 | sushi        | 10    | N      |
+| A           | 2021-01-07 | curry        | 15    | Y      |
+| A           | 2021-01-10 | ramen        | 12    | Y      |
+| A           | 2021-01-11 | ramen        | 12    | Y      |
+| A           | 2021-01-11 | ramen        | 12    | Y      |
+| B           | 2021-01-01 | curry        | 15    | N      |
+| B           | 2021-01-02 | curry        | 15    | N      |
+| B           | 2021-01-04 | sushi        | 10    | N      |
+| B           | 2021-01-11 | sushi        | 10    | Y      |
+| B           | 2021-01-16 | ramen        | 12    | Y      |
+| B           | 2021-02-01 | ramen        | 12    | Y      |
+| C           | 2021-01-01 | ramen        | 12    | N      |
+| C           | 2021-01-01 | ramen        | 12    | N      |
+| C           | 2021-01-07 | ramen        | 12    | N      |
+
+---
+Rank All The Things
+
+Danny also requires further information about the ranking of customer products, but he purposely does not need the ranking for non-member purchases so he expects null ranking values for the records when customers are not yet part of the loyalty program.
+````sql
+with tmp as (select a.customer_id, a.order_date, b.product_name,b.price,
+case when
+a.order_date >= c.join_date then 'Y'
+else 'N'
+END AS member
+from sales a
+left join menu b
+on a.product_id = b.product_id
+left join members c
+on a.customer_id = c.customer_id
+order by a.customer_id, a.order_date, b.product_name),
+tmp2 as (
+select *,
+DENSE_RANK() OVER(PARTITION BY customer_id ORDER BY order_date) as rankzada
+from tmp
+where member = 'Y'
+)
+
+select a.*, b.rankzada
+from tmp a
+left join tmp2 b
+on a.customer_id  = b.customer_id and a.order_date = b.order_date;
+
+````
+#### Passo a passo 🦶🦶:
+- Usamos a query anterior para criar o campo de member.
+- Depois usamos uma segunda cte para fazer o dense rank a partir de quem era membro.
+- Usamos o dense rank para termos repetição na order_date.
+
+####Resposta
+| customer_id | order_date | product_name | price | member | rankzada |
+|-------------|------------|--------------|-------|--------|----------|
+| A           | 2021-01-01 | curry        | 15    | N      |          |
+| A           | 2021-01-01 | sushi        | 10    | N      |          |
+| A           | 2021-01-07 | curry        | 15    | Y      | 1        |
+| A           | 2021-01-10 | ramen        | 12    | Y      | 2        |
+| A           | 2021-01-11 | ramen        | 12    | Y      | 3        |
+| A           | 2021-01-11 | ramen        | 12    | Y      | 3        |
+| A           | 2021-01-11 | ramen        | 12    | Y      | 3        |
+| A           | 2021-01-11 | ramen        | 12    | Y      | 3        |
+| B           | 2021-01-01 | curry        | 15    | N      |          |
+| B           | 2021-01-02 | curry        | 15    | N      |          |
+| B           | 2021-01-04 | sushi        | 10    | N      |          |
+| B           | 2021-01-11 | sushi        | 10    | Y      | 1        |
+| B           | 2021-01-16 | ramen        | 12    | Y      | 2        |
+| B           | 2021-02-01 | ramen        | 12    | Y      | 3        |
+| C           | 2021-01-01 | ramen        | 12    | N      |          |
+| C           | 2021-01-01 | ramen        | 12    | N      |          |
+| C           | 2021-01-07 | ramen        | 12    | N      |          |
