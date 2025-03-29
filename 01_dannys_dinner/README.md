@@ -293,5 +293,9 @@ group by customer_id;
 - Primeiro criamos uma tabela com as datas especiais e os campos que usaremos..
 - Depois criamos um case when com as condições e já somamos.
 - Por fim filtramos as datas e agrupamos por cliente.
-
+#### Resposta
+| customer_id | total_pts |
+|-------------|-----------|
+| A           | 1020      |
+| B           | 320       |
 
