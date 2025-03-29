@@ -6,7 +6,7 @@ SET search_path = dannys_diner;
 --select * from menu;
 
 SELECT a.customer_id, 
-sum(price) as total 
+sum(b.price) as total_sales 
 FROM sales a 
 LEFT JOIN menu b
 ON a.product_id = b.product_id
@@ -127,40 +127,32 @@ group by customer_id
 order by customer_id;
 -- 10.In the first week after a customer joins the program (including their join date)
 --they earn 2x points on all items, not just sushi - how many points do customer A and B have at the end of January?
-select *,
-join_date + 6 as first_week
-from members;
-
+-- criando as regras de preços
 with tmp as(
-select a.customer_id, c.join_date,
-case when
-product_name = 'sushi' THEN 10 * 2 * price
-ELSE price * 10 END AS points,
-case when 
-product_name <> 'sushi' then price * 10  * 2
-ELSE 10 * 2 * price
-end as promo,
-join_date + 6 as first_week
+select 
+a.customer_id,
+a.order_date,
+c.join_date,
+c.join_date + 6 as end_week_promo,
+date('2021-01-31') as end_jan,
+b.price,
+b.product_name
 from sales a
 left join menu b
 on a.product_id = b.product_id
-left join members c 
-on a.customer_id = c.customer_id 
-where a.customer_id in ('A', 'B')),
-
-tmp2 as (
-select customer_id,
-case when
-join_date >= first_week then promo
-else points
-end as final_pts
-from tmp
+left join members c
+on a.customer_id = c.customer_id
 )
 
-
 select customer_id,
-sum(final_pts) as pts
-from tmp2 
+sum(case 
+when product_name = 'sushi' then price * 2 * 10
+when order_date between join_date and end_week_promo then price * 2 * 10
+else price * 10
+end ) as total_pts
+from tmp
+
+where order_date >= join_date AND order_date <= end_jan
 group by customer_id;
 
 
