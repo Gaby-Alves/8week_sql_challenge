@@ -321,7 +321,7 @@ order by a.customer_id, a.order_date, b.product_name
 #### Passo a passo 🦶🦶:
 - Basicametne estamos selecionando os campos e criando um case when para defrinir quem é member ou não naquela determinada data.
 
-####Resposta
+#### Resposta
 | customer_id | order_date | product_name | price | member |
 |-------------|------------|--------------|-------|--------|
 | A           | 2021-01-01 | curry        | 15    | N      |
@@ -374,7 +374,7 @@ on a.customer_id  = b.customer_id and a.order_date = b.order_date;
 - Depois usamos uma segunda cte para fazer o dense rank a partir de quem era membro.
 - Usamos o dense rank para termos repetição na order_date.
 
-####Resposta
+#### Resposta
 | customer_id | order_date | product_name | price | member | rankzada |
 |-------------|------------|--------------|-------|--------|----------|
 | A           | 2021-01-01 | curry        | 15    | N      |          |
